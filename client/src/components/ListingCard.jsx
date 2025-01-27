@@ -80,7 +80,7 @@ const ListingCard = ({
           {listingPhotoPaths?.map((photo, index) => (
             <div key={index} className="slide">
               <img
-                src={`${server}/${photo?.replace("public", "")}`}
+                src={`${server}${photo?.replace("public", "")}`}
                 alt={`photo ${index + 1}`}
               />
               <div
