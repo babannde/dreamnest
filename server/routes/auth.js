@@ -1,4 +1,5 @@
 const router = require("express").Router();
+const cloudinary = require("cloudinary")
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
@@ -6,38 +7,42 @@ const multer = require("multer");
 const User = require("../models/User");
 
 /* Configuration Multer for File Upload */
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "public/uploads/"); // Store uploaded files in the 'uploads' folder
-  },
-  filename: function (req, file, cb) {
-    cb(null, file.originalname); // Use the original file name
-  },
-});
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, "public/uploads/"); // Store uploaded files in the 'uploads' folder
+//   },
+//   filename: function (req, file, cb) {
+//     cb(null, file.originalname); // Use the original file name
+//   },
+// });
 
-const upload = multer({ storage });
+// const upload = multer({ storage });
 
 /* USER REGISTER */
-router.post("/register", upload.single("profileImage"), async (req, res) => {
+router.post("/register", async (req, res) => {
   try {
     /* Take all information from the form */
-    const { firstName, lastName, email, password } = req.body;
+    const { firstName, lastName, email, password, avatar } = req.body;
 
     /* The uploaded file is available as req.file */
-    const profileImage = req.file;
+    // const profileImage = req.file;
 
-    if (!profileImage) {
-      return res.status(400).send("No file uploaded");
-    }
+    // if (!profileImage) {
+    //   return res.status(400).send("No file uploaded");
+    // }
 
     /* path to the uploaded profile photo */
-    const profileImagePath = profileImage.path;
+    // const profileImagePath = profileImage.path;
 
     /* Check if user exists */
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(409).json({ message: "User already exists!" });
     }
+
+    const myCloud = await cloudinary.v2.uploader.upload(avatar, {
+      folder: "avatars",
+    });
 
     /* Hass the password */
     const salt = await bcrypt.genSalt();
@@ -49,7 +54,10 @@ router.post("/register", upload.single("profileImage"), async (req, res) => {
       lastName,
       email,
       password: hashedPassword,
-      profileImagePath,
+      avatar: {
+        public_id: myCloud.public_id,
+        url: myCloud.secure_url,
+      },
     });
 
     /* Save the new User */

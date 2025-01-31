@@ -59,10 +59,7 @@ const Navbar = () => {
             <Person sx={{ color: variables.darkgrey }} />
           ) : (
             <img
-              src={`${server}${user.profileImagePath.replace(
-                "public",
-                ""
-              )}`}
+              src={`${user.avatar?.url}`}
               alt="profile photo"
               style={{ objectFit: "cover", borderRadius: "50%" }}
             />
